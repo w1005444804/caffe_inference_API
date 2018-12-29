@@ -19,13 +19,17 @@
 
 
 struct Shape {
-	unsigned int N{ 0 };
-	unsigned int C{ 0 };
-	unsigned int H{ 0 };
-	unsigned int W{ 0 };
+	Shape(){}
+	Shape(unsigned int n, unsigned int c, unsigned int h, unsigned int w){
+		N = n; C = c; H = h; W = w;
+	}
 	unsigned int count() {
 		return N*C*H*W;
 	}
+	unsigned int N{ 1 };
+	unsigned int C{ 1 };
+	unsigned int H{ 1 };
+	unsigned int W{ 1 };
 };
 
 struct Datum {

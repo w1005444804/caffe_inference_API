@@ -47,10 +47,19 @@ void DatumToBlob(const std::shared_ptr<Datum> datum, std::shared_ptr<caffe::Blob
 void BlobToDatum(const std::shared_ptr<caffe::Blob> blobptr, std::shared_ptr<Datum> datum){
 	const std::vector<int> shape = blobptr->shape();
 	Shape newdatumshape;
-	newdatumshape.N = shape[0];
-	newdatumshape.C = shape[1];
-	newdatumshape.H = shape[2];
-	newdatumshape.W = shape[3];
+	const int veclength = shape.size();
+	if (shape.size() > 0){
+		newdatumshape.N = shape[0];
+	}
+	if (shape.size() > 1){
+		newdatumshape.C = shape[1];
+	}
+	if (shape.size() > 2){
+		newdatumshape.H = shape[2];
+	}
+	if (shape.size() > 3){
+		newdatumshape.W = shape[3];
+	}
 	datum->out_shape = newdatumshape;
 	datum->outter_data = blobptr->mutable_cpu_data();
 }

@@ -8,6 +8,7 @@ void InferNet::Init(const IFparams& ifparams){
 	//create net
 	EnginNetPtr_.reset(new caffe::Net(ifparams.Proto_Path));
 	EnginNetPtr_->CopyTrainedLayersFrom(ifparams.Model_Path);
+	EnginNetPtr_->Reshape();
 	CPU_ONLY_ = ifparams.CPU_ONLY;
 	if (CPU_ONLY_){
 		caffe::SetMode(caffe::CPU, 0);
@@ -22,7 +23,7 @@ void InferNet::Init(const IFparams& ifparams){
 		EnginNetPtr_->MarkOutputs({name});
 		if (OutPut_.count(name) == 0){
 			std::shared_ptr<Datum> datum;
-			BlobToDatum(blob, datum);
+			datum.reset(new Datum);
 			OutPut_.insert(std::make_pair(name, datum));
 		}
 		else {
@@ -35,7 +36,11 @@ void InferNet::Init(const IFparams& ifparams){
 void InferNet::Infer(const std::shared_ptr<Datum> input_datum){
 	//input blob name is data;
 	DatumToBlob(input_datum, EnginNetPtr_->blob_by_name("data"));
-
+	auto blobx = EnginNetPtr_->blob_by_name("image_infor");
+	float* datax = blobx->mutable_cpu_data();
+	datax[0] = input_datum->shape.C;
+	datax[1] = input_datum->shape.H;
+	datax[2] = input_datum->shape.W;
 	// it is a bug when this dll is used to compile other dll.
 	if (CPU_ONLY_){
 		caffe::SetMode(caffe::CPU, 0);
@@ -51,6 +56,10 @@ void InferNet::Infer(const std::shared_ptr<Datum> input_datum){
 		std::shared_ptr<Datum> datum = it->second;
 		std::shared_ptr<caffe::Blob> blob = EnginNetPtr_->blob_by_name(name);
 		BlobToDatum(blob, datum);
+#ifdef _DEBUG
+		const float* data = datum->outter_data;
+		const float* blob_data = blob->cpu_data();
+#endif
 	}
 }
 /* ------------------------------------------------- */
